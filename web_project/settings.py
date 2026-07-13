@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-v84z6@^x*2c^)*(57w*q8vi!0vl9oj$cje^9e5uvsa-wk2)d*o
 DEBUG = True
 
 ALLOWED_HOSTS = ['6rtfk8-8000.csb.app', 'localhost', 'http://localhost:4200',
-                 '127.0.0.1', 'https://apereznwo.github.io/']
+                 '127.0.0.1', 'https://apereznwo.github.io/','django-setup-linux.onrender.com']
 
 
 # Application definition
@@ -126,11 +126,14 @@ DATABASES = {
         'USER': 'aperezNWO_SQLLogin_1',
         'PASSWORD': 'aperezNWO_SQLLogin_1',
         'HOST': 'webapiangulardemo.mssql.somee.com',
-        'PORT': '1433'
-    },
-    'OPTIONS': {
-        'driver': 'ODBC Driver 17 for SQL Server',
-    },
+        'PORT': '1433',
+        'OPTIONS': {
+            # Especifica explícitamente el driver 18 aquí
+            'driver': 'ODBC Driver 18 for SQL Server',
+            # Añade las propiedades requeridas por el Driver 18 en entornos en la nube
+            'extra_params': 'driver=ODBC Driver 18 for SQL Server;TrustServerCertificate=yes;',
+        },
+    }
 }
 
 CORS_ALLOWED_ORIGINS = [

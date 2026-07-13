@@ -109,7 +109,12 @@ def train_tictactoe_model(request):
             import shutil
             shutil.rmtree(save_dir)  # Remove old model
 
-        model.save(save_dir, save_format="tf")  # ← This was missing!
+        # SOLUCION 01 - ERROR    
+        # model.save(save_dir, save_format="tf")  # ← This was missing!
+        # SOLUCIÓN 02
+        model.save("machine_learning_app/tictactoe_tf_model.h5")
+        # SOLUCIÓN 03
+        #model.save("mi_modelo.keras")
 
         return JsonResponse({
             'status': 'success',
@@ -123,7 +128,7 @@ def train_tictactoe_model(request):
 
 @api_view(['GET'])
 def download_tictactoe_model(request):
-    model_dir = "tictactoe_tf_model"
+    model_dir = "machine_learning_app/tictactoe_tf_model"
     if not os.path.exists(model_dir):
         return JsonResponse({"error": "Model not trained yet."}, status=404)
 
