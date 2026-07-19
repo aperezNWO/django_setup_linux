@@ -29,12 +29,86 @@ import math # Import math module to check for special values
 logger = logging.getLogger(__name__)
 
 
+# Optional: Health check endpoint
+@api_view(['GET'])
+def health_check(request):
+    return Response({'status': 'ok'})
+    
 #############################################
-# BEGIN TETRIS FUNCIONALITY
+# BEGIN LINEAR REGRESSION FUNCIONALITY
 #############################################
+def is_valid_number(n):
+    """Check if a number is valid for JSON serialization."""
+    return isinstance(n, (int, float)) and not (math.isnan(n) or math.isinf(n))
 
+
+@api_view(['POST'])
+def predict_apollo_time(request):
+    """
+    API endpoint to predict the total mission time for an Apollo mission.
+    Expects a JSON body with 'mission_number'.
+    """
+    try:
+        # Get the mission number from the request data
+        mission_number = request.data.get('mission_number')
+
+        if mission_number is None:
+            return Response(
+                {'error': 'Missing mission_number in request body'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate input type
+        try:
+            mission_number = float(mission_number)
+        except (ValueError, TypeError):
+            return Response(
+                {'error': 'mission_number must be a number'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Call the prediction function
+        predicted_time = predict_time(mission_number)
+
+        # --- Check for invalid float values before serialization ---
+        if not is_valid_number(predicted_time):
+            logger.error(
+                f"Prediction returned invalid value: {predicted_time} for mission {mission_number}")
+            return Response(
+                {'error': f'Prediction calculation resulted in an invalid value: {predicted_time}. Check model training.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        # Prepare the response data
+        response_data = {
+            'input_mission_number'       : mission_number,
+            'predicted_total_time_hours' : predicted_time,
+            'predicted_duration_days'    : predicted_time / 24.0
+        }
+
+        # Also check the derived value
+        duration_days = predicted_time / 24.0
+        if not is_valid_number(duration_days):
+            logger.error(
+                f"Calculated duration returned invalid value: {duration_days} for mission {mission_number}, predicted_time {predicted_time}")
+            return Response(
+                {'error': f'Calculated duration resulted in an invalid value: {duration_days}. Check model training or calculation.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        response_data['predicted_duration_days'] = duration_days
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        # Log the full error
+        logger.exception("Error in predict_apollo_time endpoint")
+        return Response(
+            {'error': f'An internal error occurred: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 # ###########################################
-# END TETRIS FUNCIONALITY
+# END LINEAR REGRESSION FUNCIONALITY
 # ###########################################
 
 # ###########################################
@@ -273,80 +347,5 @@ def getAllContactForms(request):
 # ##########################
 # END DATABASE END POINTS
 # ##########################
-def is_valid_number(n):
-    """Check if a number is valid for JSON serialization."""
-    return isinstance(n, (int, float)) and not (math.isnan(n) or math.isinf(n))
 
 
-@api_view(['POST'])
-def predict_apollo_time(request):
-    """
-    API endpoint to predict the total mission time for an Apollo mission.
-    Expects a JSON body with 'mission_number'.
-    """
-    try:
-        # Get the mission number from the request data
-        mission_number = request.data.get('mission_number')
-
-        if mission_number is None:
-            return Response(
-                {'error': 'Missing mission_number in request body'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Validate input type
-        try:
-            mission_number = float(mission_number)
-        except (ValueError, TypeError):
-            return Response(
-                {'error': 'mission_number must be a number'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Call the prediction function
-        predicted_time = predict_time(mission_number)
-
-        # --- Check for invalid float values before serialization ---
-        if not is_valid_number(predicted_time):
-            logger.error(
-                f"Prediction returned invalid value: {predicted_time} for mission {mission_number}")
-            return Response(
-                {'error': f'Prediction calculation resulted in an invalid value: {predicted_time}. Check model training.'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        # Prepare the response data
-        response_data = {
-            'input_mission_number'       : mission_number,
-            'predicted_total_time_hours' : predicted_time,
-            'predicted_duration_days'    : predicted_time / 24.0
-        }
-
-        # Also check the derived value
-        duration_days = predicted_time / 24.0
-        if not is_valid_number(duration_days):
-            logger.error(
-                f"Calculated duration returned invalid value: {duration_days} for mission {mission_number}, predicted_time {predicted_time}")
-            return Response(
-                {'error': f'Calculated duration resulted in an invalid value: {duration_days}. Check model training or calculation.'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        response_data['predicted_duration_days'] = duration_days
-
-        return Response(response_data, status=status.HTTP_200_OK)
-
-    except Exception as e:
-        # Log the full error
-        logger.exception("Error in predict_apollo_time endpoint")
-        return Response(
-            {'error': f'An internal error occurred: {str(e)}'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-# Optional: Health check endpoint
-
-
-@api_view(['GET'])
-def health_check(request):
-    return Response({'status': 'ok'})
