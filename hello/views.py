@@ -28,12 +28,18 @@ import math # Import math module to check for special values
 
 logger = logging.getLogger(__name__)
 
-
-# Optional: Health check endpoint
+#############################################
+# BEGIN GENERAL FUNCIONALITY
+#############################################
 @api_view(['GET'])
 def health_check(request):
     return Response({'status': 'ok'})
-    
+def home(request):
+    return HttpResponse("Hello, Django!")
+#############################################
+# END GENERAL FUNCIONALITY
+#############################################
+
 #############################################
 # BEGIN LINEAR REGRESSION FUNCIONALITY
 #############################################
@@ -106,6 +112,7 @@ def predict_apollo_time(request):
         return Response(
             {'error': f'An internal error occurred: {str(e)}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 # ###########################################
 # END LINEAR REGRESSION FUNCIONALITY
 # ###########################################
@@ -113,7 +120,6 @@ def predict_apollo_time(request):
 # ###########################################
 # BEGIN TIC TAC TOE FUNCIONALITY
 # ###########################################
-
 
 def generate_game():
     board = np.zeros(9, dtype=int)
@@ -238,8 +244,6 @@ def download_tictactoe_model(request):
 # BEGIN DATABASE END POINTS
 # #######################################
 
-def home(request):
-    return HttpResponse("Hello, Django!")
 
 
 class RawDataSerializer(serializers.Serializer):
