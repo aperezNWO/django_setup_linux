@@ -105,8 +105,7 @@ def predict_apollo_time(request):
         logger.exception("Error in predict_apollo_time endpoint")
         return Response(
             {'error': f'An internal error occurred: {str(e)}'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 # ###########################################
 # END LINEAR REGRESSION FUNCIONALITY
 # ###########################################
